@@ -1,0 +1,75 @@
+﻿@{
+	ViewBag.Title = "Главная";
+}
+
+<div class="jumbotron">
+	<h1>Дерево</h1>
+	<p class="lead">Веб приложение, выполненное на основе ASP.NET MVC, MS SQL SERVER, EF, jQuery, jsTree, HTML, CSS и JavaScript.</p>    
+</div>
+
+<div class="row">
+	<div class="col-md-6">
+		<h2>Дерево как в примере</h2>
+	
+		<div id="container"></div>
+		<div class="form-group">
+			<div class="col-md-12 text-center">
+				<span id="busy" class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+			</div>
+		</div>
+    </div>	
+</div>
+
+<script>
+	$(document).ajaxStart(function () {
+		$("#busy").show();
+	});
+	$(document).ajaxStop(function () {
+		$("#busy").hide();
+	});
+
+	$(function () {
+        $('#container').jstree({
+            'core': {
+                'data': {
+                    'url': '/Home/GetData',
+                    'dataType': 'json',
+                    'data': function (node) {
+                    	return { 'id': node.id };
+                    }
+                },
+                "check_callback": true
+            },
+            "types": {
+            	"#": {
+            		"max_children": 1,
+            		"valid_children": ["root"]
+            	},
+            	"root": {
+            		"icon": 'glyphicon glyphicon-hdd',
+            		"valid_children": ["folder"]
+            	},
+            	"folder": {
+            		'icon': 'glyphicon glyphicon-folder-close',
+            		"valid_children": ["folder", "file"]
+
+            	},
+            	"file": {
+            		"icon": "glyphicon glyphicon-file",
+            		"valid_children": []
+            	}
+            },
+            plugins: ["json_data", "dnd", "types"]
+        }).on("move_node.jstree", function (e, data) {
+        	var node = {
+        		"id": data.node.id,
+        		"parentId": data.parent
+        	};
+        	$('#busy').show();
+        	$.ajax({
+        		url: "/Home/MoveNode",
+        		data: node
+        	});
+        });
+    });
+</script>
